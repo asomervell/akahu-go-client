@@ -1,4 +1,4 @@
-module akahu-go-client
+module github.com/asomervell/akahu-go-client
 
 go 1.24.2
 
