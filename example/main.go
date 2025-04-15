@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"akahu-test/internal/client"
-	"akahu-test/internal/models"
+	"github.com/asomervell/akahu-go-client/internal/client"
+	"github.com/asomervell/akahu-go-client/internal/models"
 
 	"github.com/joho/godotenv"
 )

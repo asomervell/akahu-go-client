@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"akahu-test/internal/models"
+	"github.com/asomervell/akahu-go-client/internal/models"
 
 	"github.com/joho/godotenv"
 )

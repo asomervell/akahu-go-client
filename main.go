@@ -9,8 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"akahu-test/internal/client"
-	"akahu-test/internal/models"
+	"github.com/asomervell/akahu-go-client/internal/client"
+	"github.com/asomervell/akahu-go-client/internal/models"
 )
 
 var (
@@ -183,10 +183,31 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to get transactions: %v", err)
 		}
-		transactions, ok := txs.([]models.Transaction)
+
+		// Convert interface{} to []models.Transaction
+		txsResponse, ok := txs.([]interface{})
 		if !ok {
-			log.Fatalf("Failed to convert transactions")
+			log.Fatalf("Failed to convert transactions response")
 		}
+
+		transactions := make([]models.Transaction, len(txsResponse))
+		for i, tx := range txsResponse {
+			txMap, ok := tx.(map[string]interface{})
+			if !ok {
+				log.Fatalf("Failed to convert transaction to map")
+			}
+
+			// Convert map to JSON and back to struct
+			txJSON, err := json.Marshal(txMap)
+			if err != nil {
+				log.Fatalf("Failed to marshal transaction: %v", err)
+			}
+
+			if err := json.Unmarshal(txJSON, &transactions[i]); err != nil {
+				log.Fatalf("Failed to unmarshal transaction: %v", err)
+			}
+		}
+
 		result, cmdErr = akahuClient.EnrichTransactions(ctx, transactions)
 
 	// Transfers

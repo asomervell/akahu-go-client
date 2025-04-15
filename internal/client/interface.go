@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	"akahu-test/internal/models"
+	"github.com/asomervell/akahu-go-client/internal/models"
 )
 
 // AkahuClient defines the interface for interacting with the Akahu API

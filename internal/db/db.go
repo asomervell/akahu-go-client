@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"akahu-test/internal/models"
+	"github.com/asomervell/akahu-go-client/internal/models"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

@@ -1,4 +1,4 @@
-module akahu-test
+module github.com/asomervell/akahu-go-client
 
 go 1.24.2
 
