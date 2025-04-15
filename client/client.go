@@ -22,8 +22,8 @@ const (
 // Client represents an Akahu API client
 type Client struct {
 	baseURL    string
-	appID      string
-	appSecret  string
+	appToken   string
+	userToken  string
 	genieToken string
 	httpClient *http.Client
 }
@@ -34,14 +34,14 @@ func New() (*Client, error) {
 	_ = godotenv.Load()
 
 	// Get required environment variables
-	appID := os.Getenv("AKAHU_APP_ID")
-	if appID == "" {
-		return nil, fmt.Errorf("AKAHU_APP_ID environment variable is required")
+	appToken := os.Getenv("AKAHU_APP_TOKEN")
+	if appToken == "" {
+		return nil, fmt.Errorf("AKAHU_APP_TOKEN environment variable is required")
 	}
 
-	appSecret := os.Getenv("AKAHU_APP_SECRET")
-	if appSecret == "" {
-		return nil, fmt.Errorf("AKAHU_APP_SECRET environment variable is required")
+	userToken := os.Getenv("AKAHU_USER_TOKEN")
+	if userToken == "" {
+		return nil, fmt.Errorf("AKAHU_USER_TOKEN environment variable is required")
 	}
 
 	genieToken := os.Getenv("AKAHU_GENIE_TOKEN")
@@ -57,8 +57,8 @@ func New() (*Client, error) {
 
 	return &Client{
 		baseURL:    baseURL,
-		appID:      appID,
-		appSecret:  appSecret,
+		appToken:   appToken,
+		userToken:  userToken,
 		genieToken: genieToken,
 		httpClient: &http.Client{},
 	}, nil
@@ -71,8 +71,8 @@ func (c *Client) makeRequest(ctx context.Context, method, path string, body io.R
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("X-App-Token", c.appSecret)
-	req.Header.Set("Authorization", "Bearer "+c.appID)
+	req.Header.Set("X-App-Token", c.appToken)
+	req.Header.Set("Authorization", "Bearer "+c.userToken)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
