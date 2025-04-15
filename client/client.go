@@ -266,12 +266,12 @@ func (c *Client) GetMe(ctx context.Context) (*User, error) {
 		return nil, err
 	}
 
-	var user User
-	if err := handleResponse(resp, &user); err != nil {
+	var response meResponse
+	if err := handleResponse(resp, &response); err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return &response.Item, nil
 }
 
 // Helper function to make Genie API requests
