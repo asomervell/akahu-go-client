@@ -63,6 +63,13 @@ func main() {
 		log.Fatalf("Failed to get accounts: %v", err)
 	}
 
+	// Get authenticated user information
+	user, err := akahuClient.GetMe(ctx)
+	if err != nil {
+		log.Fatalf("Failed to get user info: %v", err)
+	}
+	fmt.Printf("Logged in as: %s (%s)\n", user.Name, user.Email)
+
 	for _, acc := range accounts {
 		fmt.Printf("Account: %s - Balance: $%.2f %s\n",
 			acc.Name,
@@ -102,6 +109,9 @@ func main() {
 See the [examples](./examples) directory for more usage examples.
 
 ## Available Methods
+
+### User
+- `GetMe(ctx context.Context) (*User, error)`
 
 ### Accounts
 - `GetAccounts(ctx context.Context) ([]Account, error)`
