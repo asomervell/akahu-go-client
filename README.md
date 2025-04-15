@@ -22,8 +22,8 @@ go get github.com/asomervell/akahu-go-client
 The client is configured using environment variables. You can set them directly or use a `.env` file:
 
 ```bash
-AKAHU_APP_ID="your-app-id"
-AKAHU_APP_SECRET="your-app-secret"
+AKAHU_APP_TOKEN="your-app-token"
+AKAHU_USER_TOKEN="your-user-token"
 AKAHU_GENIE_TOKEN="your-genie-token"  # Optional: for transaction enrichment
 AKAHU_BASE_URL="https://api.akahu.io/v1"  # Optional: defaults to production API
 ```
