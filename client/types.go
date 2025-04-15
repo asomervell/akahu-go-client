@@ -116,6 +116,14 @@ type GenieSearchResponse struct {
 	Items   []GenieSearchResponseItem `json:"items"`
 }
 
+// User represents an authenticated user
+type User struct {
+	ID        string    `json:"_id"`
+	Email     string    `json:"email"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // API response types
 type accountsResponse struct {
 	Items []Account `json:"items"`

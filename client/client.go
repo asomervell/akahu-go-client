@@ -259,6 +259,21 @@ func (c *Client) EnrichTransactions(ctx context.Context, txs []Transaction) (*Ge
 	return &response, nil
 }
 
+// GetMe retrieves the authenticated user's information
+func (c *Client) GetMe(ctx context.Context) (*User, error) {
+	resp, err := c.makeRequest(ctx, "GET", "/me", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var user User
+	if err := handleResponse(resp, &user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 // Helper function to make Genie API requests
 func (c *Client) makeGenieRequest(ctx context.Context, method, path string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, genieBaseURL+path, body)
