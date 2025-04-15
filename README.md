@@ -5,41 +5,28 @@ A Go client library for the [Akahu API](https://developers.akahu.nz/).
 ## Features
 
 - Complete implementation of all Akahu API endpoints
-- SQLite database support using GORM
-- Configuration using YAML/environment variables
+- Transaction enrichment via Akahu Genie API
+- Environment-based configuration
 - Context support for cancellation and timeouts
 - Error handling and logging
 - Type-safe models
+- CLI tool for interacting with the API
 
 ## Installation
 
 ```bash
-go get github.com/andrewsomervell/akahu-client
+go get github.com/asomervell/akahu-go-client
 ```
 
 ## Configuration
 
-Create a `config.yaml` file in your project root:
-
-```yaml
-akahu_api:
-  base_url: "https://api.akahu.io/v1"
-  app_id: "your-app-id"
-  app_secret: "your-app-secret"
-  user_token: "your-user-token"
-
-database:
-  path: "akahu.db"
-```
-
-Or set environment variables:
+The client is configured using environment variables. You can set them directly or use a `.env` file:
 
 ```bash
-export AKAHU_API_BASE_URL="https://api.akahu.io/v1"
-export AKAHU_API_APP_ID="your-app-id"
-export AKAHU_API_APP_SECRET="your-app-secret"
-export AKAHU_API_USER_TOKEN="your-user-token"
-export DATABASE_PATH="akahu.db"
+AKAHU_APP_ID="your-app-id"
+AKAHU_APP_SECRET="your-app-secret"
+AKAHU_GENIE_TOKEN="your-genie-token"  # Optional: for transaction enrichment
+AKAHU_BASE_URL="https://api.akahu.io/v1"  # Optional: defaults to production API
 ```
 
 ## Usage
@@ -52,43 +39,71 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/andrewsomervell/akahu-client/internal/client"
-	"github.com/andrewsomervell/akahu-client/internal/config"
+	"github.com/asomervell/akahu-go-client/internal/client"
 )
 
 func main() {
-	// Load configuration
-	cfg, err := config.LoadConfig(".")
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
-
 	// Create a new client
-	akahuClient := client.New(cfg)
+	akahuClient, err := client.New()
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
 
 	// Create context
 	ctx := context.Background()
-
-	// Get current user
-	user, err := akahuClient.GetCurrentUser(ctx)
-	if err != nil {
-		log.Fatalf("Failed to get current user: %v", err)
-	}
-	fmt.Printf("Current user: %+v\n", user)
 
 	// Get accounts
 	accounts, err := akahuClient.GetAccounts(ctx)
 	if err != nil {
 		log.Fatalf("Failed to get accounts: %v", err)
 	}
-	fmt.Printf("Found %d accounts\n", len(accounts))
+
+	// Type assert the response
+	if accs, ok := accounts.([]models.Account); ok {
+		for _, acc := range accs {
+			fmt.Printf("Account: %s, Balance: $%.2f %s\n", 
+				acc.Name, 
+				acc.Balance.Current,
+				acc.Balance.Currency)
+		}
+	}
+
+	// Enrich a transaction with merchant and category data
+	if tx, ok := transaction.(*models.Transaction); ok {
+		enriched, err := akahuClient.EnrichTransaction(ctx, tx)
+		if err != nil {
+			log.Fatalf("Failed to enrich transaction: %v", err)
+		}
+		fmt.Printf("Enriched transaction: %+v\n", enriched)
+	}
 }
+```
+
+## CLI Tool
+
+The client includes a CLI tool for interacting with the API. Run with `-h` to see available commands:
+
+```bash
+go run main.go -h
+```
+
+Example commands:
+
+```bash
+# List all accounts
+go run main.go -cmd accounts:list
+
+# Get transactions for an account
+go run main.go -cmd transactions:by-account -id ACCOUNT_ID
+
+# Enrich a transaction
+go run main.go -cmd transactions:enrich -id TRANSACTION_ID
 ```
 
 ## Available Methods
 
 ### Accounts
-- `GetAccounts(ctx context.Context) ([]models.Account, error)`
+- `GetAccounts(ctx context.Context) (interface{}, error)`
 - `GetAccount(ctx context.Context, id string) (*models.Account, error)`
 - `RevokeAccountAccess(ctx context.Context, id string) error`
 
@@ -119,8 +134,9 @@ func main() {
 - `GetPendingTransactions(ctx context.Context) ([]models.Transaction, error)`
 - `GetTransaction(ctx context.Context, id string) (*models.Transaction, error)`
 - `GetTransactionsByAccount(ctx context.Context, accountID string) ([]models.Transaction, error)`
-- `GetPendingTransactionsByAccount(ctx context.Context, accountID string) ([]models.Transaction, error)`
 - `GetTransactionsByIDs(ctx context.Context, ids []string) ([]models.Transaction, error)`
+- `EnrichTransaction(ctx context.Context, tx *models.Transaction) (*GenieSearchResponse, error)`
+- `EnrichTransactions(ctx context.Context, txs []models.Transaction) (*GenieSearchResponse, error)`
 
 ### Transfers
 - `GetTransfers(ctx context.Context) ([]models.Transfer, error)`
