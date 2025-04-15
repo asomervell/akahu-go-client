@@ -261,15 +261,36 @@ func (c *Client) EnrichTransactions(ctx context.Context, txs []Transaction) (*Ge
 
 // GetMe retrieves the authenticated user's information
 func (c *Client) GetMe(ctx context.Context) (*User, error) {
+	fmt.Printf("GetMe Request:\n")
+	fmt.Printf("  URL: %s/me\n", c.baseURL)
+	fmt.Printf("  Method: GET\n")
+	fmt.Printf("  Headers:\n")
+	fmt.Printf("    X-Akahu-Id: %s\n", c.appToken)
+	fmt.Printf("    Authorization: Bearer %s\n", c.userToken)
+	fmt.Printf("    Accept: application/json\n")
+
 	resp, err := c.makeRequest(ctx, "GET", "/me", nil)
 	if err != nil {
+		fmt.Printf("GetMe Error: %v\n", err)
 		return nil, err
 	}
 
 	var user User
 	if err := handleResponse(resp, &user); err != nil {
+		fmt.Printf("GetMe Error parsing response: %v\n", err)
 		return nil, err
 	}
+
+	fmt.Printf("GetMe Response:\n")
+	fmt.Printf("  Status: %d %s\n", resp.StatusCode, resp.Status)
+	fmt.Printf("  User:\n")
+	fmt.Printf("    ID: %s\n", user.ID)
+	fmt.Printf("    Email: %s\n", user.Email)
+	fmt.Printf("    FirstName: %s\n", user.FirstName)
+	fmt.Printf("    LastName: %s\n", user.LastName)
+	fmt.Printf("    PreferredName: %s\n", user.PreferredName)
+	fmt.Printf("    MobileNumber: %s\n", user.MobileNumber)
+	fmt.Printf("    CreatedAt: %s\n", user.CreatedAt)
 
 	return &user, nil
 }
