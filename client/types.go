@@ -118,10 +118,12 @@ type GenieSearchResponse struct {
 
 // User represents an authenticated user
 type User struct {
-	ID        string    `json:"_id"`
-	Email     string    `json:"email"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
+	ID            string    `json:"_id"`
+	Email         string    `json:"email"`
+	Name          string    `json:"name"`
+	PreferredName string    `json:"preferred_name,omitempty"`
+	MobileNumber  string    `json:"mobile_number,omitempty"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 // API response types
