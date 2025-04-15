@@ -281,6 +281,25 @@ func (c *Client) GetMe(ctx context.Context) (*User, error) {
 		return nil, err
 	}
 
+	// Handle undefined name fields
+	if user.FirstName == "" && user.LastName == "" {
+		// If both names are empty and we have an email, use the part before @ as a fallback
+		if user.Email != "" {
+			username := strings.Split(user.Email, "@")[0]
+			user.FirstName = username
+			fmt.Printf("GetMe Warning: First name and last name undefined, using email username: %s\n", username)
+		} else {
+			user.FirstName = "Unknown"
+			fmt.Printf("GetMe Warning: First name and last name undefined, using 'Unknown'\n")
+		}
+	} else if user.FirstName == "" {
+		user.FirstName = user.LastName
+		user.LastName = ""
+		fmt.Printf("GetMe Warning: First name undefined, using last name as first name\n")
+	} else if user.LastName == "" {
+		fmt.Printf("GetMe Warning: Last name undefined\n")
+	}
+
 	fmt.Printf("GetMe Response:\n")
 	fmt.Printf("  Status: %d %s\n", resp.StatusCode, resp.Status)
 	fmt.Printf("  User:\n")
