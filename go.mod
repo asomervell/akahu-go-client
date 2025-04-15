@@ -1,4 +1,4 @@
-module akahu-test
+module akahu-go-client
 
 go 1.24.2
 
