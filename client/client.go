@@ -71,8 +71,9 @@ func (c *Client) makeRequest(ctx context.Context, method, path string, body io.R
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("X-App-Token", c.appToken)
+	req.Header.Set("X-Akahu-Id", c.appToken)
 	req.Header.Set("Authorization", "Bearer "+c.userToken)
+	req.Header.Set("Accept", "application/json")
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
