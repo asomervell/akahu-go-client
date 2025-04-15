@@ -68,7 +68,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to get user info: %v", err)
 	}
-	fmt.Printf("Logged in as: %s (%s)\n", user.Name, user.Email)
+	displayName := user.PreferredName
+	if displayName == "" {
+		displayName = fmt.Sprintf("%s %s", user.FirstName, user.LastName)
+	}
+	fmt.Printf("Logged in as: %s (%s)\n", displayName, user.Email)
+	if user.MobileNumber != "" {
+		fmt.Printf("Mobile: %s\n", user.MobileNumber)
+	}
 
 	for _, acc := range accounts {
 		fmt.Printf("Account: %s - Balance: $%.2f %s\n",
