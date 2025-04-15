@@ -10,7 +10,6 @@ A Go client library for the [Akahu API](https://developers.akahu.nz/).
 - Context support for cancellation and timeouts
 - Error handling and logging
 - Type-safe models
-- CLI tool for interacting with the API
 
 ## Installation
 
@@ -39,11 +38,17 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/asomervell/akahu-go-client/internal/client"
+	"github.com/asomervell/akahu-go-client/client"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Create a new client
+	// Load environment variables from .env file (optional)
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: .env file not found")
+	}
+
+	// Create a new Akahu client
 	akahuClient, err := client.New()
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
@@ -58,100 +63,57 @@ func main() {
 		log.Fatalf("Failed to get accounts: %v", err)
 	}
 
-	// Type assert the response
-	if accs, ok := accounts.([]models.Account); ok {
-		for _, acc := range accs {
-			fmt.Printf("Account: %s, Balance: $%.2f %s\n", 
-				acc.Name, 
-				acc.Balance.Current,
-				acc.Balance.Currency)
-		}
+	for _, acc := range accounts {
+		fmt.Printf("Account: %s - Balance: $%.2f %s\n",
+			acc.Name,
+			acc.Balance.Current,
+			acc.Balance.Currency)
 	}
 
-	// Enrich a transaction with merchant and category data
-	if tx, ok := transaction.(*models.Transaction); ok {
-		enriched, err := akahuClient.EnrichTransaction(ctx, tx)
+	// Get transactions for the first account
+	if len(accounts) > 0 {
+		transactions, err := akahuClient.GetTransactionsByAccount(ctx, accounts[0].ID)
 		if err != nil {
-			log.Fatalf("Failed to enrich transaction: %v", err)
+			log.Fatalf("Failed to get transactions: %v", err)
 		}
-		fmt.Printf("Enriched transaction: %+v\n", enriched)
+
+		for _, tx := range transactions {
+			fmt.Printf("Transaction: %s - $%.2f\n", tx.Description, tx.Amount)
+
+			// Enrich the transaction with merchant and category data
+			enriched, err := akahuClient.EnrichTransaction(ctx, &tx)
+			if err != nil {
+				log.Printf("Failed to enrich transaction: %v", err)
+				continue
+			}
+
+			if len(enriched.Items) > 0 && len(enriched.Items[0].Results) > 0 {
+				result := enriched.Items[0].Results[0]
+				fmt.Printf("  Category: %s\n", result.Category.Name)
+				if result.Merchant.Name != "" {
+					fmt.Printf("  Merchant: %s\n", result.Merchant.Name)
+				}
+			}
+		}
 	}
 }
 ```
 
-## CLI Tool
-
-The client includes a CLI tool for interacting with the API. Run with `-h` to see available commands:
-
-```bash
-go run main.go -h
-```
-
-Example commands:
-
-```bash
-# List all accounts
-go run main.go -cmd accounts:list
-
-# Get transactions for an account
-go run main.go -cmd transactions:by-account -id ACCOUNT_ID
-
-# Enrich a transaction
-go run main.go -cmd transactions:enrich -id TRANSACTION_ID
-```
+See the [examples](./examples) directory for more usage examples.
 
 ## Available Methods
 
 ### Accounts
-- `GetAccounts(ctx context.Context) (interface{}, error)`
-- `GetAccount(ctx context.Context, id string) (*models.Account, error)`
-- `RevokeAccountAccess(ctx context.Context, id string) error`
-
-### Auth
-- `ExchangeAuthorizationCode(ctx context.Context, code string) (string, error)`
-- `RevokeToken(ctx context.Context, token string) error`
-
-### Categories
-- `GetCategories(ctx context.Context) ([]models.Category, error)`
-- `GetCategory(ctx context.Context, id string) (*models.Category, error)`
-
-### Connections
-- `GetConnections(ctx context.Context) ([]models.Connection, error)`
-- `GetConnection(ctx context.Context, id string) (*models.Connection, error)`
-
-### Data Refresh
-- `RefreshAllAccounts(ctx context.Context) error`
-- `RefreshAccounts(ctx context.Context, accountIDs []string) error`
-
-### Payments
-- `GetPayments(ctx context.Context) ([]models.Payment, error)`
-- `CreatePayment(ctx context.Context, payment *models.Payment) (*models.Payment, error)`
-- `GetPayment(ctx context.Context, id string) (*models.Payment, error)`
-- `CancelPayment(ctx context.Context, id string) error`
+- `GetAccounts(ctx context.Context) ([]Account, error)`
+- `GetAccount(ctx context.Context, id string) (*Account, error)`
 
 ### Transactions
-- `GetTransactions(ctx context.Context) ([]models.Transaction, error)`
-- `GetPendingTransactions(ctx context.Context) ([]models.Transaction, error)`
-- `GetTransaction(ctx context.Context, id string) (*models.Transaction, error)`
-- `GetTransactionsByAccount(ctx context.Context, accountID string) ([]models.Transaction, error)`
-- `GetTransactionsByIDs(ctx context.Context, ids []string) ([]models.Transaction, error)`
-- `EnrichTransaction(ctx context.Context, tx *models.Transaction) (*GenieSearchResponse, error)`
-- `EnrichTransactions(ctx context.Context, txs []models.Transaction) (*GenieSearchResponse, error)`
-
-### Transfers
-- `GetTransfers(ctx context.Context) ([]models.Transfer, error)`
-- `CreateTransfer(ctx context.Context, transfer *models.Transfer) (*models.Transfer, error)`
-- `GetTransfer(ctx context.Context, id string) (*models.Transfer, error)`
-
-### User
-- `GetCurrentUser(ctx context.Context) (*models.User, error)`
-
-### Webhooks
-- `GetWebhooks(ctx context.Context) ([]models.Webhook, error)`
-- `CreateWebhook(ctx context.Context, webhook *models.Webhook) (*models.Webhook, error)`
-- `GetWebhookPublicKey(ctx context.Context) (string, error)`
-- `DeleteWebhook(ctx context.Context, id string) error`
-- `GetWebhookEvents(ctx context.Context) ([]string, error)`
+- `GetTransactions(ctx context.Context) ([]Transaction, error)`
+- `GetTransaction(ctx context.Context, id string) (*Transaction, error)`
+- `GetTransactionsByAccount(ctx context.Context, accountID string) ([]Transaction, error)`
+- `GetTransactionsByIDs(ctx context.Context, ids []string) ([]Transaction, error)`
+- `EnrichTransaction(ctx context.Context, tx *Transaction) (*GenieSearchResponse, error)`
+- `EnrichTransactions(ctx context.Context, txs []Transaction) (*GenieSearchResponse, error)`
 
 ## Contributing
 
