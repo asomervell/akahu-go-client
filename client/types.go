@@ -120,7 +120,8 @@ type GenieSearchResponse struct {
 type User struct {
 	ID            string    `json:"_id"`
 	Email         string    `json:"email"`
-	Name          string    `json:"name"`
+	FirstName     string    `json:"first_name,omitempty"`
+	LastName      string    `json:"last_name,omitempty"`
 	PreferredName string    `json:"preferred_name,omitempty"`
 	MobileNumber  string    `json:"mobile_number,omitempty"`
 	CreatedAt     time.Time `json:"created_at"`
