@@ -138,17 +138,35 @@ func (c *Client) GetAccount(ctx context.Context, id string) (*Account, error) {
 
 // GetTransactions retrieves all transactions
 func (c *Client) GetTransactions(ctx context.Context) ([]Transaction, error) {
-	resp, err := c.makeRequest(ctx, "GET", "/transactions", nil)
-	if err != nil {
-		return nil, err
+	var allTransactions []Transaction
+	cursor := ""
+
+	for {
+		path := "/transactions"
+		if cursor != "" {
+			path += "?cursor=" + cursor
+		}
+
+		resp, err := c.makeRequest(ctx, "GET", path, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var response transactionsResponse
+		if err := handleResponse(resp, &response); err != nil {
+			return nil, err
+		}
+
+		allTransactions = append(allTransactions, response.Items...)
+
+		// If there's no next cursor, we've reached the end
+		if response.Cursor.Next == "" {
+			break
+		}
+		cursor = response.Cursor.Next
 	}
 
-	var response transactionsResponse
-	if err := handleResponse(resp, &response); err != nil {
-		return nil, err
-	}
-
-	return response.Items, nil
+	return allTransactions, nil
 }
 
 // GetTransaction retrieves a specific transaction by ID
@@ -168,17 +186,35 @@ func (c *Client) GetTransaction(ctx context.Context, id string) (*Transaction, e
 
 // GetTransactionsByAccount retrieves all transactions for a specific account
 func (c *Client) GetTransactionsByAccount(ctx context.Context, accountID string) ([]Transaction, error) {
-	resp, err := c.makeRequest(ctx, "GET", "/accounts/"+accountID+"/transactions", nil)
-	if err != nil {
-		return nil, err
+	var allTransactions []Transaction
+	cursor := ""
+
+	for {
+		path := "/accounts/" + accountID + "/transactions"
+		if cursor != "" {
+			path += "?cursor=" + cursor
+		}
+
+		resp, err := c.makeRequest(ctx, "GET", path, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var response transactionsResponse
+		if err := handleResponse(resp, &response); err != nil {
+			return nil, err
+		}
+
+		allTransactions = append(allTransactions, response.Items...)
+
+		// If there's no next cursor, we've reached the end
+		if response.Cursor.Next == "" {
+			break
+		}
+		cursor = response.Cursor.Next
 	}
 
-	var response transactionsResponse
-	if err := handleResponse(resp, &response); err != nil {
-		return nil, err
-	}
-
-	return response.Items, nil
+	return allTransactions, nil
 }
 
 // GetTransactionsByIDs retrieves transactions by their IDs

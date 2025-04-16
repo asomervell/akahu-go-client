@@ -135,5 +135,8 @@ type accountsResponse struct {
 }
 
 type transactionsResponse struct {
-	Items []Transaction `json:"items"`
+	Items  []Transaction `json:"items"`
+	Cursor struct {
+		Next string `json:"next"`
+	} `json:"cursor"`
 }

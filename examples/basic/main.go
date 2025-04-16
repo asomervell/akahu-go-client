@@ -39,7 +39,11 @@ func main() {
 
 	// Get transactions for the first account
 	if len(accounts) > 0 {
+
 		transactions, err := akahuClient.GetTransactionsByAccount(ctx, accounts[0].ID)
+
+		fmt.Printf("%v transactions\n", len(transactions))
+
 		if err != nil {
 			log.Fatalf("Failed to get transactions: %v", err)
 		}
