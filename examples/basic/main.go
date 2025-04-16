@@ -49,20 +49,26 @@ func main() {
 		}
 
 		for _, tx := range transactions {
-			fmt.Printf("Transaction: %s - $%.2f\n", tx.Description, tx.Amount)
-
-			// Enrich the transaction with merchant and category data
-			enriched, err := akahuClient.EnrichTransaction(ctx, &tx)
-			if err != nil {
-				log.Printf("Failed to enrich transaction: %v", err)
-				continue
+			fmt.Printf("\nTransaction: %s - $%.2f\n", tx.Description, tx.Amount)
+			fmt.Printf("Meta: %+v\n", tx.Meta)
+			if tx.Meta.Logo != "" {
+				fmt.Printf("Meta Logo: %s\n", tx.Meta.Logo)
 			}
-
-			if len(enriched.Items) > 0 && len(enriched.Items[0].Results) > 0 {
-				result := enriched.Items[0].Results[0]
-				fmt.Printf("  Category: %s\n", result.Category.Name)
-				if result.Merchant.Name != "" {
-					fmt.Printf("  Merchant: %s\n", result.Merchant.Name)
+			if tx.Merchant.ID != "" {
+				fmt.Printf("Merchant: ID=%s, Name=%s, Website=%s, Logo=%s, NZBN=%s\n",
+					tx.Merchant.ID,
+					tx.Merchant.Name,
+					tx.Merchant.Website,
+					tx.Merchant.Logo,
+					tx.Merchant.NZBN)
+			}
+			if tx.Category.ID != "" {
+				fmt.Printf("Category: ID=%s, Name=%s, Group=%s\n",
+					tx.Category.ID,
+					tx.Category.Name,
+					tx.Category.Group)
+				if len(tx.Category.Groups) > 0 {
+					fmt.Printf("Category Groups: %+v\n", tx.Category.Groups)
 				}
 			}
 		}

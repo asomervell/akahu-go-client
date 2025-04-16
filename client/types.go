@@ -49,13 +49,13 @@ type Meta struct {
 	Reference    string      `json:"reference,omitempty"`
 	OtherParty   string      `json:"other_party,omitempty"`
 	OtherAccount string      `json:"other_account,omitempty"`
+	Logo         string      `json:"logo,omitempty"`
 	Conversion   *Conversion `json:"conversion,omitempty"`
 }
 
 // Conversion represents currency conversion details
 type Conversion struct {
 	CardSuffix string `json:"card_suffix,omitempty"`
-	Logo       string `json:"logo,omitempty"`
 }
 
 // Category represents a transaction category
@@ -74,6 +74,7 @@ type Merchant struct {
 	Logo        string `json:"logo,omitempty"`
 	Description string `json:"description,omitempty"`
 	Website     string `json:"website,omitempty"`
+	NZBN        string `json:"nzbn,omitempty"`
 }
 
 // GenieSearchQuery represents a query to the Genie API
