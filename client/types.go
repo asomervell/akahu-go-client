@@ -42,12 +42,29 @@ type Transaction struct {
 	IsPending   bool      `json:"pending"`
 }
 
+// Meta represents transaction metadata
+type Meta struct {
+	Particulars  string      `json:"particulars,omitempty"`
+	Code         string      `json:"code,omitempty"`
+	Reference    string      `json:"reference,omitempty"`
+	OtherParty   string      `json:"other_party,omitempty"`
+	OtherAccount string      `json:"other_account,omitempty"`
+	Conversion   *Conversion `json:"conversion,omitempty"`
+}
+
+// Conversion represents currency conversion details
+type Conversion struct {
+	CardSuffix string `json:"card_suffix,omitempty"`
+	Logo       string `json:"logo,omitempty"`
+}
+
 // Category represents a transaction category
 type Category struct {
-	ID          string `json:"_id"`
-	Name        string `json:"name"`
-	Group       string `json:"group"`
-	Description string `json:"description"`
+	ID          string                         `json:"_id"`
+	Name        string                         `json:"name"`
+	Group       string                         `json:"group"`
+	Description string                         `json:"description"`
+	Groups      map[string]*GenieCategoryGroup `json:"groups"`
 }
 
 // Merchant represents a transaction merchant
@@ -56,14 +73,7 @@ type Merchant struct {
 	Name        string `json:"name"`
 	Logo        string `json:"logo,omitempty"`
 	Description string `json:"description,omitempty"`
-}
-
-// Meta represents transaction metadata
-type Meta struct {
-	Particulars string `json:"particulars,omitempty"`
-	Code        string `json:"code,omitempty"`
-	Reference   string `json:"reference,omitempty"`
-	OtherParty  string `json:"other_party,omitempty"`
+	Website     string `json:"website,omitempty"`
 }
 
 // GenieSearchQuery represents a query to the Genie API
